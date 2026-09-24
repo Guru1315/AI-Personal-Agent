@@ -20,7 +20,6 @@
     document.body.prepend(svg);
 })();
 
-// ── Constants ─────────────────────────────────────────────────
 const DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 const PLAN_COLORS = [
     { bg: 'rgba(124,58,237,0.2)', border: '#7c3aed', text: '#a855f7' },
@@ -31,7 +30,6 @@ const PLAN_COLORS = [
 ];
 const GEMINI_MODEL_DEFAULT = 'gemini-3.6-flash';
 
-// ── State ─────────────────────────────────────────────────────
 let state = {
     user: { name: '', apiKey: '', sessionMins: 25, geminiModel: 'gemini-3.6-flash' },
     weekHours: { Sun: 2, Mon: 3, Tue: 3, Wed: 3, Thu: 3, Fri: 2, Sat: 4 },
@@ -47,7 +45,6 @@ let state = {
     reschedulePlanId: null,
 };
 
-// ── Persistence ────────────────────────────────────────────────
 function saveState() {
     localStorage.setItem('planai_state', JSON.stringify(state));
 }
@@ -58,7 +55,6 @@ function loadState() {
     } catch (e) { /* ignore */ }
 }
 
-// ── Utility ────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2); }
 function today() { return new Date().toISOString().slice(0, 10); }
 function addDays(dateStr, n) {
@@ -89,7 +85,6 @@ function greetingByHour() {
     return 'evening';
 }
 
-// ── Onboarding ─────────────────────────────────────────────────
 function renderHoursGrid(containerId, isSmall = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
@@ -112,7 +107,6 @@ function renderHoursGrid(containerId, isSmall = false) {
 function initOnboarding() {
     renderHoursGrid('hours-grid');
 
-    // Session opts
     document.querySelectorAll('#step-2 .session-opt').forEach(btn => {
         btn.addEventListener('click', () => {
             document.querySelectorAll('#step-2 .session-opt').forEach(b => b.classList.remove('active'));
@@ -121,7 +115,6 @@ function initOnboarding() {
         });
     });
 
-    // Quick-add commitments
     document.querySelectorAll('.quick-chip').forEach(btn => {
         btn.addEventListener('click', () => addCommitment(btn.dataset.task));
     });
@@ -133,7 +126,6 @@ function initOnboarding() {
         if (e.key === 'Enter') document.getElementById('add-task-btn').click();
     });
 
-    // Steps nav
     document.getElementById('step1-next').addEventListener('click', () => {
         const name = document.getElementById('user-name').value.trim();
         if (!name) { toast('Please enter your name', 'error'); return; }
