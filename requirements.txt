@@ -1,2 +1,5 @@
-streamlit
+Netlify
 google-genai
+Java-Script
+CSS
+HTML
