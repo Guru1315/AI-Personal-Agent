@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PlanAI – Your AI Personal Planner</title>
+    <meta name="description"
+        content="PlanAI uses AI to create personalized study and task plans based on your schedule, deadlines, and goals. Automatically adapts when you miss a day." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+    <!-- ONBOARDING -->
+    <div id="onboarding-screen" class="screen active">
+        <div class="onboarding-bg">
+            <div class="orb orb-1"></div>
+            <div class="orb orb-2"></div>
+            <div class="orb orb-3"></div>
+        </div>
+        <div class="step-indicator">
+            <div class="step active" data-step="1"></div>
+            <div class="step" data-step="2"></div>
+            <div class="step" data-step="3"></div>
+        </div>
+
+        <!-- Step 1 -->
+        <div class="onboard-step" id="step-1">
+            <div class="logo-mark">
+                <div class="logo-orb"></div>
+                <span>PlanAI</span>
+            </div>
+            <h1>Your <span class="gradient-text">AI Planner</span><br />that actually knows you.</h1>
+            <p class="subtitle">Tell us about yourself and we'll build a personalized, realistic plan — and adapt it
+                when life gets in the way.</p>
+            <div class="form-group">
+                <label for="user-name">What should we call you?</label>
+                <input type="text" id="user-name" placeholder="e.g. Alex" autocomplete="off" />
+            </div>
+            <div class="form-group">
+                <label for="gemini-key">Gemini API Key <span class="optional">(optional – enables AI
+                        smarts)</span></label>
+                <input type="password" id="gemini-key" placeholder="AIza..." autocomplete="off" />
+                <small>Get a free key at <a href="https://aistudio.google.com" target="_blank">aistudio.google.com</a>.
+                    Without it, we use smart local planning.</small>
+            </div>
+            <button class="btn-primary" id="step1-next">Get Started &rarr;</button>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="onboard-step hidden" id="step-2">
+            <h2>When are you <span class="gradient-text">free to study?</span></h2>
+            <p class="subtitle">Set your available study hours for each day of the week.</p>
+            <div class="hours-grid" id="hours-grid"></div>
+            <div class="form-group" style="margin-top:1.5rem">
+                <label>Preferred study session length</label>
+                <div class="session-options">
+                    <button class="session-opt active" data-mins="25">25 min</button>
+                    <button class="session-opt" data-mins="45">45 min</button>
+                    <button class="session-opt" data-mins="60">60 min</button>
+                    <button class="session-opt" data-mins="90">90 min</button>
+                </div>
+            </div>
+            <div class="btn-row">
+                <button class="btn-ghost" id="step2-back">&larr; Back</button>
+                <button class="btn-primary" id="step2-next">Continue &rarr;</button>
+            </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="onboard-step hidden" id="step-3">
+            <h2>Any existing <span class="gradient-text">commitments?</span></h2>
+            <p class="subtitle">Add recurring tasks or blocked times so AI won't schedule over them.</p>
+            <div class="task-input-row">
+                <input type="text" id="task-name-input" placeholder="e.g. Gym every Monday 6pm" />
+                <button class="btn-icon" id="add-task-btn">+</button>
+            </div>
+            <div class="task-chips" id="task-chips"></div>
+            <div class="quick-add-label">Quick add:</div>
+            <div class="quick-chips">
+                <button class="quick-chip" data-task="Work 9am-5pm weekdays">Work 9-5 weekdays</button>
+                <button class="quick-chip" data-task="Gym Mon/Wed/Fri 7pm">Gym M/W/F</button>
+                <button class="quick-chip" data-task="Family dinner Sundays">Family dinner Sun</button>
+                <button class="quick-chip" data-task="Sleep 10pm-6am daily">Sleep 10pm-6am</button>
+            </div>
+            <div class="btn-row">
+                <button class="btn-ghost" id="step3-back">&larr; Back</button>
+                <button class="btn-primary" id="step3-finish">Build My Planner &#x1F680;</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN APP -->
+    <div id="app-screen" class="screen hidden">
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <div class="logo-orb small"></div>
+                <span>PlanAI</span>
+            </div>
+            <div class="user-card">
+                <div class="avatar" id="sidebar-avatar">A</div>
+                <div class="user-info">
+                    <div class="user-name-display" id="sidebar-name">Alex</div>
+                    <div class="user-status">&#9679; Active</div>
+                </div>
+            </div>
+            <div class="streak-card">
+                <div class="streak-icon">&#x1F525;</div>
+                <div class="streak-info">
+                    <div class="streak-num" id="streak-count">0</div>
+                    <div class="streak-label">Day Streak</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-view="dashboard" id="nav-dashboard">
+                    <span class="nav-icon">&#9632;</span> Dashboard
+                </button>
+                <button class="nav-item" data-view="plans" id="nav-plans">
+                    <span class="nav-icon">&#128197;</span> My Plans
+                </button>
+                <button class="nav-item" data-view="chat" id="nav-chat">
+                    <span class="nav-icon">&#10022;</span> AI Chat
+                </button>
+                <button class="nav-item" data-view="settings" id="nav-settings">
+                    <span class="nav-icon">&#9881;</span> Settings
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="btn-ghost small" id="reset-btn">Reset Planner</button>
+            </div>
+        </aside>
+
+        <main class="main-content">
+            <header class="topbar">
+                <button class="sidebar-toggle" id="sidebar-toggle">&#9776;</button>
+                <div class="topbar-title" id="topbar-title">Dashboard</div>
+                <div class="topbar-right">
+                    <div class="today-badge">Today: <span id="today-date"></span></div>
+                </div>
+            </header>
+
+            <!-- DASHBOARD -->
+            <section class="view active" id="view-dashboard">
+                <div class="view-header">
+                    <h2>Good <span id="greeting-time">morning</span>, <span id="greeting-name">Alex</span> &#x1F44B;
+                    </h2>
+                    <p class="view-sub">Here's your focus for today.</p>
+                </div>
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-icon">&#x1F4CB;</div>
+                        <div class="stat-value" id="stat-plans">0</div>
+                        <div class="stat-label">Active Plans</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#x2705;</div>
+                        <div class="stat-value" id="stat-done">0</div>
+                        <div class="stat-label">Done Today</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#x23F3;</div>
+                        <div class="stat-value" id="stat-pending">0</div>
+                        <div class="stat-label">Remaining</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">&#x1F3AF;</div>
+                        <div class="stat-value" id="stat-progress">0%</div>
+                        <div class="stat-label">Overall Progress</div>
+                    </div>
+                </div>
+                <div class="dashboard-grid">
+                    <div class="glass-card today-tasks-card">
+                        <div class="card-header">
+                            <h3>Today's Tasks</h3>
+                            <span class="task-count-badge" id="today-count">0 tasks</span>
+                        </div>
+                        <div class="tasks-list" id="today-tasks-list">
+                            <div class="empty-state">
+                                <div class="empty-icon">&#x2728;</div>
+                                <p>No plans yet. Use AI Chat to create your first plan!</p>
+                                <button class="btn-primary small" id="go-to-chat-btn">Start Planning &rarr;</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="glass-card progress-card">
+                        <h3>Progress</h3>
+                        <div class="progress-ring-wrap">
+                            <svg class="progress-ring" viewBox="0 0 120 120">
+                                <circle class="ring-bg" cx="60" cy="60" r="50" />
+                                <circle class="ring-fill" id="ring-fill" cx="60" cy="60" r="50" stroke-dasharray="314"
+                                    stroke-dashoffset="314" />
+                            </svg>
+                            <div class="ring-label">
+                                <div class="ring-percent" id="ring-percent">0%</div>
+                                <div class="ring-sub">complete</div>
+                            </div>
+                        </div>
+                        <div class="plan-breakdown" id="plan-breakdown"></div>
+                    </div>
+                </div>
+                <div class="missed-alert hidden" id="missed-alert">
+                    <div class="alert-icon">&#x26A0;&#xFE0F;</div>
+                    <div class="alert-content">
+                        <strong>You missed some tasks yesterday!</strong>
+                        <p>We've detected incomplete tasks. Want us to auto-reschedule?</p>
+                    </div>
+                    <button class="btn-primary small" id="reschedule-btn">Reschedule Now</button>
+                    <button class="btn-ghost small" id="dismiss-alert">Dismiss</button>
+                </div>
+            </section>
+
+            <!-- PLANS -->
+            <section class="view hidden" id="view-plans">
+                <div class="view-header">
+                    <h2>My Plans <span class="gradient-text">&#x1F4C5;</span></h2>
+                    <button class="btn-primary small" id="new-plan-btn">+ New Plan</button>
+                </div>
+                <div class="plans-list" id="plans-list">
+                    <div class="empty-state large">
+                        <div class="empty-icon">&#x1F4ED;</div>
+                        <p>No plans yet. Chat with AI to create your first goal!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- PLAN DETAIL -->
+            <section class="view hidden" id="view-plan-detail">
+                <div class="view-header">
+                    <button class="btn-ghost small back-btn" id="back-to-plans">&larr; Back</button>
+                    <h2 id="detail-plan-name">Plan Name</h2>
+                </div>
+                <div class="plan-detail-grid">
+                    <div class="glass-card calendar-card">
+                        <div class="calendar-header">
+                            <h3>Study Calendar</h3>
+                            <div class="legend">
+                                <span class="dot done"></span>Done
+                                <span class="dot today-dot"></span>Today
+                                <span class="dot upcoming-dot"></span>Upcoming
+                                <span class="dot missed-dot"></span>Missed
+                            </div>
+                        </div>
+                        <div class="calendar-grid" id="detail-calendar"></div>
+                    </div>
+                    <div class="glass-card day-tasks-card">
+                        <div class="day-tasks-header">
+                            <h3 id="day-tasks-date">Select a day</h3>
+                        </div>
+                        <div class="day-tasks-list" id="day-tasks-list">
+                            <div class="empty-state">
+                                <p>Click a day on the calendar</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="reschedule-bar hidden" id="plan-reschedule-bar">
+                    <span>&#x1F504; Missed tasks detected — want to auto-reschedule?</span>
+                    <button class="btn-primary small" id="plan-reschedule-btn">Auto-Reschedule</button>
+                </div>
+            </section>
+
+            <!-- AI CHAT -->
+            <section class="view hidden" id="view-chat">
+                <div class="chat-container">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-welcome">
+                            <div class="chat-orb"></div>
+                            <h3>Hi! I'm your AI Planner.</h3>
+                            <p>Tell me your goal and I'll build a personalized plan around your schedule.</p>
+                            <div class="example-prompts">
+                                <button class="example-prompt"
+                                    data-prompt="I have a math exam in 18 days and haven't started yet">&#x1F4DA; Exam
+                                    in 18 days</button>
+                                <button class="example-prompt"
+                                    data-prompt="I want to learn guitar and practice 30 minutes every day for 3 weeks">&#x1F3B8;
+                                    Learn guitar in 3 weeks</button>
+                                <button class="example-prompt"
+                                    data-prompt="I need to finish a 10,000 word thesis in 30 days">&#x1F4DD; Thesis in
+                                    30 days</button>
+                                <button class="example-prompt"
+                                    data-prompt="I want to run a 5K race in 6 weeks, currently can't run 1km">&#x1F3C3;
+                                    5K race in 6 weeks</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-input-bar">
+                        <textarea id="chat-input"
+                            placeholder="Tell me your goal… e.g. 'I have an exam in 18 days and haven't started'"
+                            rows="1"></textarea>
+                        <button class="send-btn" id="send-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="2">
+                                <line x1="22" y1="2" x2="11" y2="13"></line>
+                                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SETTINGS -->
+            <section class="view hidden" id="view-settings">
+                <div class="view-header">
+                    <h2>Settings &#x2699;</h2>
+                </div>
+                <div class="settings-grid">
+                    <div class="glass-card settings-card">
+                        <h3>Profile</h3>
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" id="settings-name" placeholder="Your name" />
+                        </div>
+                    </div>
+                    <div class="glass-card settings-card">
+                        <h3>AI Configuration</h3>
+                        <div class="form-group">
+                            <label>Gemini API Key</label>
+                            <input type="password" id="settings-api-key" placeholder="AIza..." />
+                            <small>Stored only in your browser localStorage.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Gemini Model</label>
+                            <select id="settings-model"
+                                style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);border-radius:var(--radius-sm);padding:0.75rem 1rem;width:100%;font-family:inherit;font-size:0.9rem;outline:none;cursor:pointer;">
+                                <option value="gemini-3.6-flash">gemini-3.6-flash (recommended)</option>
+                                <option value="gemini-2.5-flash">gemini-2.5-flash</option>
+                                <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+                                <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                                <option value="gemini-1.5-flash">gemini-1.5-flash</option>
+                                <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                            </select>
+                            <small>Your key must have access to this model.</small>
+                        </div>
+                        <div class="form-group">
+                            <label>Preferred session length (minutes)</label>
+                            <div class="session-options" id="settings-session-opts">
+                                <button class="session-opt" data-mins="25">25 min</button>
+                                <button class="session-opt" data-mins="45">45 min</button>
+                                <button class="session-opt" data-mins="60">60 min</button>
+                                <button class="session-opt" data-mins="90">90 min</button>
+                            </div>
+                        </div>
+                        <button class="btn-primary" id="save-settings-btn">Save Settings</button>
+                    </div>
+                    <div class="glass-card settings-card">
+                        <h3>Available Hours</h3>
+                        <div class="hours-grid small" id="settings-hours-grid"></div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal-overlay hidden" id="plan-modal">
+        <div class="modal glass-card">
+            <button class="modal-close" id="modal-close">&#x2715;</button>
+            <h3 id="modal-title">Your Study Plan</h3>
+            <div id="modal-body"></div>
+            <div class="modal-actions">
+                <button class="btn-ghost" id="modal-cancel">Regenerate</button>
+                <button class="btn-primary" id="modal-confirm">Save Plan &#x2713;</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay hidden" id="reschedule-modal">
+        <div class="modal glass-card">
+            <button class="modal-close" id="reschedule-modal-close">&#x2715;</button>
+            <h3>Auto-Reschedule Plan</h3>
+            <div id="reschedule-modal-body"></div>
+            <div class="modal-actions">
+                <button class="btn-ghost" id="reschedule-cancel">Cancel</button>
+                <button class="btn-primary" id="reschedule-confirm">Apply Reschedule &#x2713;</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toast-container"></div>
+    <script src="app.js"></script>
+</body>
+
+</html>
